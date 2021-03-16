@@ -1,6 +1,7 @@
 const jsonwebtoken = require('jsonwebtoken') // 生成token
 const User = require('../model/user')
 const uuid = require('uuid')
+const utils = require('../util/index')
 const secret = require('../../config').secret
 
 class UserCtl{
@@ -27,7 +28,8 @@ class UserCtl{
             }
             return;
         }else{
-            if(passWord !== user.passWord){
+            let md5pass = await utils.MD5(passWord, user.id)
+            if(md5pass !== user.passWord){
                 ctx.body = {
                     code: 400,
                     message: '用户名或者密码不正确',
@@ -35,7 +37,7 @@ class UserCtl{
                 }
                 return
             }else {
-                const { id, userName} = user
+                const { id, userName } = user
                 const token = await jsonwebtoken.sign({ id }, secret, {expiresIn: '1h'})
                 ctx.body = {
                     code: 200,
@@ -49,11 +51,9 @@ class UserCtl{
         }
     }
     async find(ctx) {
+        console.log(ctx)
         const { authorization } = ctx.request.header;
-        let token = authorization.split(' ')[1];
-        // 验证token的真实性，并获得token里面的是数据
-        let authData = jsonwebtoken.verify(token, secret)
-        console.log(authData);
+        let authData = utils.getIdByToken(authorization)
         ctx.body = {
             code: 200,
             message: '成功获取到数据',
@@ -75,7 +75,6 @@ class UserCtl{
             }
         })
         const { userName, passWord, email } = ctx.request.body
-        
         let user = await User.findOne({
             userName: userName
         });
@@ -87,10 +86,12 @@ class UserCtl{
             }
             return ;
         }
+        let id = uuid.v1();
+        let md5pass = await utils.MD5(passWord, id)
         var newUser = User({
-            id: uuid.v1(),
+            id: id,
             userName: userName,
-            passWord: passWord,
+            passWord: md5pass,
             email: email
         });
         await newUser.save();
