@@ -6,8 +6,6 @@ const parameter = require("koa-parameter"); // 校验传参
 const router = require('./app/routers/index')
 const jwt = require('koa-jwt') // 鉴权
 const secret = require('./config').secret // 密钥
-const sendEmail = require('./app/middleware/sendMail')
-sendEmail()();
 const auth = jwt({secret})
 
 app.use(bodyParser());
