@@ -29,7 +29,7 @@ app.use((ctx, next) => {
 
 // 使用unless来排除掉不需要token的接口
 app.use(auth.unless({
-   path: [/\/user\/login/, /\/user\/register/] 
+   path: [/\/user\/login/, /\/user\/register/, /\/auth\/getCode/] 
 }))
 
 app.use(router.routes(), router.allowedMethods())

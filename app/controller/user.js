@@ -2,6 +2,7 @@ const jsonwebtoken = require('jsonwebtoken') // 生成token
 const User = require('../model/user')
 const uuid = require('uuid')
 const utils = require('../util/index')
+const redis = require('../middleware/redis')
 const secret = require('../../config').secret
 
 class UserCtl{
@@ -9,16 +10,25 @@ class UserCtl{
         ctx.status = 200
         // 对参数进行验证
         ctx.verifyParams({
-            userName: {
+            email: {
                 type: 'string', required: true
             },
             passWord: {
                 type: 'string', required: true
             },
         })
-        const { userName, passWord } = ctx.request.body
+        const { email, passWord } = ctx.request.body;
+        let regEmail = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        if(!regEmail.test(email)){ 
+            ctx.body = {
+                code: 201,
+                message: '请输入正确的邮箱格式！',
+                data: {}
+            }
+            return ;
+        }
         let user = await User.findOne({
-            userName: userName
+            email: email
         });
         if(!user){
             ctx.body = {
@@ -51,7 +61,6 @@ class UserCtl{
         }
     }
     async find(ctx) {
-        console.log(ctx)
         const { authorization } = ctx.request.header;
         let authData = utils.getIdByToken(authorization)
         ctx.body = {
@@ -72,16 +81,37 @@ class UserCtl{
             },
             email: {
                 type: 'string', required: true
+            },
+            code: {
+                type: 'string', require: true
             }
         })
-        const { userName, passWord, email } = ctx.request.body
+        const { userName, passWord, email, code } = ctx.request.body
+        let regEmail = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        if(!regEmail.test(email)){ 
+            ctx.body = {
+                code: 201,
+                message: '请输入正确的邮箱格式！',
+                data: {}
+            }
+            return ;
+        }
+        let redisCode = await redis.getString(`${email}:singup`);
+        if(redisCode == null || code != redisCode){
+            ctx.body = {
+                code: 201,
+                message: '验证码错误',
+                data: {}
+            }
+            return ;
+        }
         let user = await User.findOne({
-            userName: userName
+            email: email
         });
         if(user){
             ctx.body = {
                 code: 400,
-                message: '用户已存在',
+                message: '该邮箱已经被占用',
                 data: {}
             }
             return ;
@@ -95,6 +125,7 @@ class UserCtl{
             email: email
         });
         await newUser.save();
+        redis.del(`${email}:singup`)
         ctx.body = {
             code: 200,
             massage: '注册成功',

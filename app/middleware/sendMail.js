@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer')
 const smtpTransport = require('nodemailer-smtp-transport')
+const redis = require('./redis')
 
 module.exports = sendEmail => {
     // 创建连接对象
@@ -20,12 +21,9 @@ module.exports = sendEmail => {
         }
         return code 
     }
-
     const regEmail=/^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,3}$/ //验证邮箱正则
 
     return async(ctx) => {
-        
-        console.log(ctx)
         const { email } = ctx.request.body
         let EMAIL = email;
         if (regEmail.test(EMAIL)){
@@ -46,6 +44,7 @@ module.exports = sendEmail => {
                     transport.close(); 
                     return ;
                 }
+                redis.setString(`${email}:singup`, code, 300)
             })        
             ctx.body = {
                 code: 200,
@@ -54,7 +53,7 @@ module.exports = sendEmail => {
             }
         }else{
             ctx.body = {
-                code: 200,
+                code: 201,
                 message: '请输入正确的邮箱格式！',
                 data: {}
             }
