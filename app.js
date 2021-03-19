@@ -1,6 +1,8 @@
 const Koa = require('koa');  //引入koa框架
 const bodyParser = require('koa-bodyparser') 
 const app = new Koa();
+const https = require('https')
+const ws = require('./server/webSocket')
 const mongoose = require('./app/mongodb'); // 连接mongoDB数据库
 const parameter = require("koa-parameter"); // 校验传参
 const router = require('./app/routers/index')
@@ -29,12 +31,18 @@ app.use((ctx, next) => {
 
 // 使用unless来排除掉不需要token的接口
 app.use(auth.unless({
-   path: [/\/user\/login/, /\/user\/register/, /\/auth\/getCode/] 
+   path: [/\/user\/login/, /\/user\/register/, 
+    /\/auth\/getCode/] 
 }))
 
 app.use(router.routes(), router.allowedMethods())
 app.use(parameter(app));
 
-app.listen(3000, () => {
+//app.listen()方法会返回http.Server
+let server = app.listen(3000, () => {
     console.log("现在开始监听3000端口");
 })
+
+app.wss = ws(server)
+
+

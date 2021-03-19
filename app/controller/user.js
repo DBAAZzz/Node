@@ -48,7 +48,7 @@ class UserCtl{
                 return
             }else {
                 const { id, userName } = user
-                const token = await jsonwebtoken.sign({ id }, secret, {expiresIn: '1h'})
+                const token = await jsonwebtoken.sign({ id }, secret, {expiresIn: '1d'})
                 ctx.body = {
                     code: 200,
                     message: '登录成功',
