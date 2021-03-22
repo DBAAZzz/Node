@@ -2,6 +2,9 @@ const WebSocket = require('ws'); // 引入WebSocket模块
 const WebSocketServer = WebSocket.Server; // 引用Server类
 const url = require('url')
 const { createMessage, getUserInfo } = require('./getUser');
+const { 
+    saveOfflineMessage, getOfflineMessageById, 
+    delOfflineMessageById, saveChatRecord } = require('./saveMessage');
 const jsonwebtoken = require('jsonwebtoken');
 const secret = require('../config').secret
 
@@ -68,7 +71,7 @@ function createWebSocketServer(server, onConnection, onMessage, onClose, onError
     return wss;
 }
 
-function onConnect(){
+async function onConnect(){
     console.log("监听onConnect")
     let user = this.user;
     let msg = createMessage('join', user, `${user.name} joined.`);
@@ -77,21 +80,32 @@ function onConnect(){
     let users = this.wss.clients.forEach((client) => {
         return client.user;
     })
+    let result = await getOfflineMessageById(this.user.id);
+    console.log('该用户的离线消息', result.length)
+    result.forEach(item => {
+        let msg = createMessage('chat', { id: item.senderId }, item.content.trim())
+        this.send(msg)
+    });
+    if(result.length !== 0) await delOfflineMessageById(this.user.id)
     this.send(createMessage('list', user, users), (err) => {
         if(err) console.log("发送消息发生了错误", err);
     });
     console.log('数量', this.wss.clients.size)
-    // console.log('客户端', this.wss.clients)
 }   
 
-function onMessage(messageObj){
+async function onMessage(messageObj){
     let { id, message } = JSON.parse(messageObj);
     console.log('message', message)
     if(message && message.trim()){
         let msg = createMessage('chat', this.user, message.trim());
-        // this.wss.broadcast(msg);
-        if(wsObj.hasOwnProperty(id)) wsObj[id].send(msg) 
-        else console.log("该用户没有上线！")
+        saveChatRecord(this.user.id, id, this.user.id, 1, message)
+        if(wsObj.hasOwnProperty(id)){
+            wsObj[id].send(msg)
+        } 
+        else {
+            saveOfflineMessage(this.user.id, id, 1, message)
+            console.log("该用户没有上线！")
+        }
         
     }
 }

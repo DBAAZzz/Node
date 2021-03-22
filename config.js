@@ -1,7 +1,7 @@
 module.exports = {
     secret: 'DBAASecret',
     redisServer: {
-        host: '127.0.0.1',
+        host: '139.196.100.226',
         port: '6379'
     }
 }
