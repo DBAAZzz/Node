@@ -1,6 +1,8 @@
 const redis = require('redis');
 const redisServer = require('../../config').redisServer
-const client = redis.createClient(redisServer.portm, redisServer.host, {})
+const client = redis.createClient(redisServer.portm, redisServer.host, {
+    password: 97010500
+})
 // 指定连接到redis的1号DB
 client.select(1, () => {})
 
