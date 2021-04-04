@@ -44,5 +44,3 @@ let server = app.listen(3000, () => {
 })
 
 app.wss = ws(server)
-
-

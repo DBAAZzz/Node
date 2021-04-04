@@ -7,6 +7,7 @@ const secret = require('../../config').secret
 
 class UserCtl{
     async login(ctx){
+        
         ctx.status = 200
         // 对参数进行验证
         ctx.verifyParams({
@@ -18,6 +19,7 @@ class UserCtl{
             },
         })
         const { email, passWord } = ctx.request.body;
+        console.log("请求进来了", email, passWord)
         let regEmail = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
         if(!regEmail.test(email)){ 
             ctx.body = {
