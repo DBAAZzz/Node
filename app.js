@@ -39,7 +39,8 @@ app.use(router.routes(), router.allowedMethods())
 app.use(parameter(app));
 
 //app.listen()方法会返回http.Server
-let server = app.listen(3000, () => {
+let env = process.env.NODE_ENV;
+let server = app.listen( env == 'development' ? 3000 : 3001, () => {
     console.log("现在开始监听3000端口");
 })
 

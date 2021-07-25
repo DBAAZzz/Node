@@ -5,7 +5,8 @@ const multer = require('koa-multer')
 
 var storage = multer.diskStorage({
     destination: function(req, file, cb){
-        cb(null, 'app/uploads/images/')
+        let fileUrl = process.env.NODE_ENV == 'development' ? 'app/uploads/images/' : '../images/'
+        cb(null, fileUrl);
     },
     filename: function(req, file, cb){
         var fileFormat = (file.originalname).split(".");

@@ -4,11 +4,14 @@
   "description": "一个koa的测试项目",
   "main": "app.js",
   "scripts": {
+    "dev": "cross-env NODE_ENV=development supervisor app.js",
+    "production": "cross-env NODE_ENV=production supervisor app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "zcd",
+  "author": "DBAA",
   "license": "ISC",
   "dependencies": {
+    "cross-env": "^7.0.3",
     "jsonwebtoken": "^8.5.1",
     "koa": "^2.13.1",
     "koa-bodyparser": "^4.3.0",

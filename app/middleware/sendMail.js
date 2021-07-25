@@ -53,7 +53,7 @@ module.exports = sendEmail => {
             }
         }else{
             ctx.body = {
-                code: 201,
+                code: 400,
                 message: '请输入正确的邮箱格式！',
                 data: {}
             }
