@@ -6,7 +6,6 @@ function getUserInfo(id){
     });
 }
 
-
 let messageIndex = 0;
 
 function createMessage(type, user, data){
